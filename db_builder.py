@@ -14,52 +14,29 @@ c = db.cursor()    #facilitate db ops
 def run(command) :
     c.execute(command)
 
-# alter list so that primary key is set
-def add(fields, pid) :
-    for num in range(0, len(fields)) : 
-        if fields[num] == pid :
-            fields[num] = pid + " primary key"
-    return fields
-
 # fill database table with csv rows
-def fill(read) :
+def fill(name, read) :
     for line in read :
-        fields = []
         #take each column data in the row
+        fields = []
         for field in read.fieldnames :
-            fields.append("\"" + line[field] + "\"")
-        run("INSERT INTO peeps VALUES (" + ', '.join(fields) + ")")
-
+            fields.append("\'" + line[field] + "\'")
+        #run command with values
+        run("INSERT INTO " + name +  " VALUES (" + ', '.join(fields) + ")")
+        
 # main method for converting csv file into database table
-def create(src, name, pid) :
+def create(src, name) :
     with open(src) as table :
         read = csv.DictReader(table)
-        #add primary key to appropriate field, procured by fieldnames attribute
-        fields = add(read.fieldnames, pid)
-        #run create table command
-        run("CREATE TABLE " + name + " (" + ', '.join(fields) + ")")
-        fill(read)
+        fill(name, read)
 
-create("peeps.csv", "peeps", "id") 
-        
-'''
-peppers = "peeps.csv"
-    
-# open peeps.csv as ppl
-with open(peppers) as tbl:
 
-    #dictify it
-    machina = csv.DictReader(tbl)
+run("CREATE TABLE peeps (name TEXT, age INTEGER, id INTEGER PRIMARY KEY)")
+create("peeps.csv", "peeps")
 
-    #create table with appropriate fieldnames
-    run("CREATE TABLE peeps (name, age, id integer primary KEY)")
-    
-    #for each line in peeps.csv, populate peeps the table
-    for line in machina:
-        retstr = "\"" + line["name"] + "\", " + line["age"] + ", " + line["id"]
-        run("INSERT INTO peeps VALUES ( " + retstr + ")")
+run("CREATE TABLE courses (code TEXT, mark INTEGER, id INTEGER)")
+create("courses.csv", "courses")
 
-   ''' 
 
 #==========================================================
 db.commit() #save changes
